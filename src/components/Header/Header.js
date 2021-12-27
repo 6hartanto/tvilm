@@ -2,7 +2,7 @@ import React from 'react'
 import './Header.css'
 
 const Header = () => {
-  return <span className='header'>🎬 Tvilm 🎥</span>
+  return <span onClick={() => window.scroll(0, 0)} className='header'>🎬 Tvilm 🎥</span>
 }
 
 export default Header
