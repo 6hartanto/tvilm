@@ -4,8 +4,20 @@ import Genres from "../../components/Genres/Genres";
 import SingleContent from "../../components/SingleContent/SingleContent";
 import useGenre from "../../hooks/useGenre";
 import CustomPagination from "../../components/Pagination/CustomPagination";
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles((theme) => ({
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  },
+}));
 
 const Movies = () => {
+  const classes = useStyles();
+  const [loading, setLoading] = useState(true);
   const [genres, setGenres] = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [page, setPage] = useState(1);
@@ -24,39 +36,52 @@ const Movies = () => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    setTimeout(() =>
+      setLoading(false),
+      3000
+    )
     fetchMovies();
     // eslint-disable-next-line
   }, [genreforURL, page]);
 
   return (
     <div>
-      <span className="pageTitle">Discover Movies</span>
-      <Genres
-        type="movie"
-        selectedGenres={selectedGenres}
-        setSelectedGenres={setSelectedGenres}
-        genres={genres}
-        setGenres={setGenres}
-        setPage={setPage}
-      />
-      <div className="trending">
-        {content &&
-          content.map((c) => (
-            <SingleContent
-              key={c.id}
-              id={c.id}
-              poster={c.poster_path}
-              title={c.title || c.name}
-              date={c.first_air_date || c.release_date}
-              media_type="movie"
-              vote_average={c.vote_average}
-            />
-          ))}
-      </div>
-      {numOfPages > 1 && (
-        <CustomPagination setPage={setPage} numOfPages={numOfPages} />
-      )}
+      {loading ?
+        <Backdrop className={classes.backdrop} open>
+          <CircularProgress color="inherit" />
+        </Backdrop>
+        :
+        <div>
+          <span className="pageTitle">Discover Movies</span>
+          <Genres
+            type="movie"
+            selectedGenres={selectedGenres}
+            setSelectedGenres={setSelectedGenres}
+            genres={genres}
+            setGenres={setGenres}
+            setPage={setPage}
+          />
+          <div className="trending">
+            {content &&
+              content.map((c) => (
+                <SingleContent
+                  key={c.id}
+                  id={c.id}
+                  poster={c.poster_path}
+                  title={c.title || c.name}
+                  date={c.first_air_date || c.release_date}
+                  media_type="movie"
+                  vote_average={c.vote_average}
+                />
+              ))}
+          </div>
+          {numOfPages > 1 && (
+            <CustomPagination setPage={setPage} numOfPages={numOfPages} />
+          )}
+        </div>
+      }
     </div>
+
   );
 };
 
