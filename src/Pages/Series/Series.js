@@ -1,4 +1,10 @@
 import axios from "axios";
+import {
+  createTheme,
+  Tab,
+  Tabs,
+  ThemeProvider,
+} from "@material-ui/core";
 import { useEffect, useState } from "react";
 import Genres from "../../components/Genres/Genres";
 import CustomPagination from "../../components/Pagination/CustomPagination";
@@ -15,6 +21,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const darkTheme = createTheme({
+  palette: {
+    type: "dark",
+    primary: {
+      main: "#fff",
+    },
+  },
+});
+
 const Series = () => {
   const classes = useStyles();
   const [loading, setLoading] = useState(true);
@@ -24,10 +39,11 @@ const Series = () => {
   const [content, setContent] = useState([]);
   const [numOfPages, setNumOfPages] = useState();
   const genreforURL = useGenre(selectedGenres);
+  const [filter, setFilter] = useState(0);
 
   const fetchSeries = async () => {
     const { data } = await axios.get(
-      `https://api.themoviedb.org/3/discover/tv?api_key=${process.env.REACT_APP_API_KEY}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=${page}&with_genres=${genreforURL}`
+      `https://api.themoviedb.org/3/tv/${filter ? "top_rated" : "popular"}?api_key=${process.env.REACT_APP_API_KEY}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=${page}&with_genres=${genreforURL}`
     );
     setContent(data.results);
     setNumOfPages(data.total_pages);
@@ -42,7 +58,7 @@ const Series = () => {
     )
     fetchSeries();
     // eslint-disable-next-line
-  }, [genreforURL, page]);
+  }, [genreforURL, filter, page]);
 
   return (
     <div>
@@ -52,32 +68,48 @@ const Series = () => {
         </Backdrop>
         :
         <div>
-          <span className="pageTitle">Discover Series</span>
-          <Genres
-            type="tv"
-            selectedGenres={selectedGenres}
-            setSelectedGenres={setSelectedGenres}
-            genres={genres}
-            setGenres={setGenres}
-            setPage={setPage}
-          />
-          <div className="trending">
-            {content &&
-              content.map((c) => (
-                <SingleContent
-                  key={c.id}
-                  id={c.id}
-                  poster={c.poster_path}
-                  title={c.title || c.name}
-                  date={c.first_air_date || c.release_date}
-                  media_type="tv"
-                  vote_average={c.vote_average}
-                />
-              ))}
-          </div>
-          {numOfPages > 1 && (
-            <CustomPagination setPage={setPage} numOfPages={numOfPages} />
-          )}
+          <ThemeProvider theme={darkTheme}>
+            <span className="pageTitle">Discover Series</span>
+            <Tabs
+              value={filter}
+              indicatorColor="primary"
+              textColor="primary"
+              onChange={(event, newValue) => {
+                setFilter(newValue);
+                setPage(1);
+              }}
+              style={{ paddingBottom: 5 }}
+              aria-label="disabled tabs example"
+            >
+              <Tab style={{ width: "50%" }} label="Popular" />
+              <Tab style={{ width: "50%" }} label="Top Rated" />
+            </Tabs>
+            <Genres
+              type="tv"
+              selectedGenres={selectedGenres}
+              setSelectedGenres={setSelectedGenres}
+              genres={genres}
+              setGenres={setGenres}
+              setPage={setPage}
+            />
+            <div className="trending">
+              {content &&
+                content.map((c) => (
+                  <SingleContent
+                    key={c.id}
+                    id={c.id}
+                    poster={c.poster_path}
+                    title={c.title || c.name}
+                    date={c.first_air_date || c.release_date}
+                    media_type="tv"
+                    vote_average={c.vote_average}
+                  />
+                ))}
+            </div>
+            {numOfPages > 1 && (
+              <CustomPagination setPage={setPage} numOfPages={numOfPages} />
+            )}
+          </ThemeProvider>
         </div>
       }
     </div>
